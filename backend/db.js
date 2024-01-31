@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+import { connect, Schema, model } from "mongoose";
 require('dotenv').config();
 
 const MongoUrl = process.env.MONGO_DB_URL;
 
-mongoose.connect(MongoUrl)
+connect(MongoUrl)
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     username: {
         type: String,
         required: true,
@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema({
 });
 
 // Create a model from the schema
-const User = mongoose.model('User', userSchema);
+const User = model('User', userSchema);
 
-module.exports = {
+export default {
 	User
 };
