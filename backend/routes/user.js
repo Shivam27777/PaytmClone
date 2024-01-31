@@ -4,6 +4,8 @@ import {User} from "../db";
 import JWT_SECRET from "../config";
 const jwt = require('jsonwebtoken');
 const userRouter = Router();
+const  { authMiddleware } = require("../middleware");
+
 
 const signupSchema = zod.object({
     username : zod.string().email(),
@@ -76,5 +78,54 @@ userRouter.post("/signin", async (req, res) => {
     })
 })
 
+
+const updateBody = zod.object({
+	password: zod.string().optional(),
+    firstName: zod.string().optional(),
+    lastName: zod.string().optional(),
+})
+
+userRouter.put("/", authMiddleware, async (req, res) => {
+    const { success } = updateBody.safeParse(req.body)
+    if (!success) {
+        res.status(411).json({
+            message: "Error while updating information"
+        })
+    }
+
+    await User.updateOne(req.body, {
+        _id: req.userId
+    })
+
+    res.json({
+        message: "Updated successfully"
+    })
+})
+
+// Learned something new here - Like Operation in mongoos 
+router.get("/bulk", async (req, res) => {
+    const filter = req.query.filter || "";
+
+    const users = await User.find({
+        $or: [{
+            firstName: {
+                "$regex": filter
+            }
+        }, {
+            lastName: {
+                "$regex": filter
+            }
+        }]
+    })
+
+    res.json({
+        user: users.map(user => ({
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            _id: user._id
+        }))
+    })
+})
 
 export default userRouter;
