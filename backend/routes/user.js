@@ -14,32 +14,48 @@ const signupSchema = zod.object({
     password : zod.string()
 })
 
-userRouter.post("/signup", async (req,res)=>{
-    const body = req.body;
-    const {success} = signupSchema.safeParse(body);
-    if ( !success){
-        return res.json({
-            message: "Email already taken/ Incorrect inputs"
+userRouter.post("/signup", async (req, res) => {
+    const { success } = signupSchema.safeParse(req.body)
+    if (!success) {
+        return res.status(411).json({
+            message: "Email already taken / Incorrect inputs"
         })
     }
 
-    const user = await User.findOne({
-        username : body.username
+    const existingUser = await User.findOne({
+        username: req.body.username
     })
 
-    if(user._id){
-        return res.json({
-            message : "Email already taken / Incorrect inputs"
+    if (existingUser) {
+        return res.status(411).json({
+            message: "Email already taken/Incorrect inputs"
         })
     }
 
-    await User.create(body);
-    const token  = jwt.sign({
-        userId : dbUser._id
+    const user = await User.create({
+        username: req.body.username,
+        password: req.body.password,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+    })
+    const userId = user._id;
+
+		/// ----- Create new account ------
+
+    await Account.create({
+        userId,
+        balance: 1 + Math.random() * 10000
+    })
+
+		/// -----  ------
+
+    const token = jwt.sign({
+        userId
     }, JWT_SECRET);
+
     res.json({
         message: "User created successfully",
-        token : token
+        token: token
     })
 })
 
@@ -103,7 +119,7 @@ userRouter.put("/", authMiddleware, async (req, res) => {
 })
 
 // Learned something new here - Like Operation in mongoos 
-router.get("/bulk", async (req, res) => {
+userRouter.get("/bulk", async (req, res) => {
     const filter = req.query.filter || "";
 
     const users = await User.find({
