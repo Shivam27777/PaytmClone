@@ -1,11 +1,12 @@
-import { Router } from "express";
-const zod = require('zod');
-import {User} from "../db";
-import JWT_SECRET from "../config";
-const jwt = require('jsonwebtoken');
-const userRouter = Router();
+const express = require('express');
+const router = express.Router();
+const zod = require("zod");
+const { User, Account } = require("../db");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../config");
 const  { authMiddleware } = require("../middleware");
 
+const userRouter = express.Router();
 
 const signupSchema = zod.object({
     username : zod.string().email(),
@@ -144,4 +145,4 @@ userRouter.get("/bulk", async (req, res) => {
     })
 })
 
-export default userRouter;
+module.exports = userRouter;
