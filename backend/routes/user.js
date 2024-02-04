@@ -25,14 +25,12 @@ userRouter.post("/signup", async (req, res) => {
     const existingUser = await User.findOne({
         username: req.body.username
     })
-    console.log(existingUser)
 
     if (!!existingUser) {
         return res.status(411).json({
             message: "Email already taken/Incorrect inputs"
         })
     }
-    console.log('asdasdasdas')
 
     const user = await User.create({
         username: req.body.username,
@@ -75,7 +73,7 @@ userRouter.post("/signin", async (req, res) => {
         })
     }
 
-    const user = await User.findOne({
+    const user = await User.find({
         username: req.body.username,
         password: req.body.password
     });
